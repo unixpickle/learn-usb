@@ -6,7 +6,7 @@
 
 void print_descriptors(libusb_device_handle* handle);
 const char* string_descriptor(libusb_device_handle* handle, uint8_t idx);
-void print_sub_descriptor(desc_header_t* header);
+void print_sub_descriptor(libusb_device_handle* handle, desc_header_t* header);
 
 int main() {
   printf("initializing libusb...\n");
@@ -71,7 +71,7 @@ void print_descriptors(libusb_device_handle* handle) {
         fprintf(stderr, "buffer underflow\n");
         break;
       }
-      print_sub_descriptor(header);
+      print_sub_descriptor(handle, header);
       offset += header->length;
     }
   }
@@ -85,14 +85,35 @@ const char* string_descriptor(libusb_device_handle* handle, uint8_t idx) {
   return result;
 }
 
-void print_sub_descriptor(desc_header_t* header) {
+void print_sub_descriptor(libusb_device_handle* handle, desc_header_t* header) {
   if (header->desc_type == DESC_TYPE_CONFIG) {
-    printf("   - Configuration\n");
+    if (header->length < sizeof(config_desc_t)) {
+      return;
+    }
+    config_desc_t* desc = (config_desc_t*)header;
+    printf("   | Configuration: %s\n",
+           string_descriptor(handle, desc->configuration_index));
+    printf("     - max power: %d\n", desc->max_power);
+    printf("     - attributes: %d\n", desc->attributes);
   } else if (header->desc_type == DESC_TYPE_INTERFACE) {
-    printf("     - Interface\n");
+    if (header->length < sizeof(interface_desc_t)) {
+      return;
+    }
+    interface_desc_t* desc = (interface_desc_t*)header;
+    printf("     | Interface: %s\n",
+           string_descriptor(handle, desc->interface_index));
+    printf("       - class: %d\n", desc->interface_class);
+    printf("       - subclass: %d\n", desc->interface_subclass);
   } else if (header->desc_type == DESC_TYPE_ENDPOINT) {
-    printf("       - Endpoint\n");
+    if (header->length < sizeof(endpoint_desc_t)) {
+      return;
+    }
+    endpoint_desc_t* desc = (endpoint_desc_t*)header;
+    printf("       | Endpoint: %d\n", desc->address);
+    printf("         - max packet size: %d\n", desc->max_packet_size);
+    printf("         - interval: %d\n", desc->interval);
+    printf("         - attributes: %d\n", desc->attributes);
   } else {
-    printf("       - (Unknown descriptor type: %d)\n", header->desc_type);
+    printf("       | (Unknown descriptor type: %d)\n", header->desc_type);
   }
 }
