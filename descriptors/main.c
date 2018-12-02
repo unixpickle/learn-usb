@@ -100,8 +100,10 @@ void print_sub_descriptor(libusb_device_handle* handle, desc_header_t* header) {
       return;
     }
     interface_desc_t* desc = (interface_desc_t*)header;
-    printf("     | Interface: %s\n",
+    printf("     | Interface: %d\n", desc->interface_number);
+    printf("       - name: %s\n",
            string_descriptor(handle, desc->interface_index));
+    printf("       - alternate: %d\n", desc->alternate_setting);
     printf("       - class: %d\n", desc->interface_class);
     printf("       - subclass: %d\n", desc->interface_subclass);
   } else if (header->desc_type == DESC_TYPE_ENDPOINT) {
