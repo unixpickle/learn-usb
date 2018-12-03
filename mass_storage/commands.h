@@ -1,5 +1,5 @@
-#ifndef __ms_devS_H__
-#define __ms_devS_H__
+#ifndef __MS_COMMANDS_H__
+#define __MS_COMMANDS_H__
 
 #include <inttypes.h>
 #include <libusb.h>

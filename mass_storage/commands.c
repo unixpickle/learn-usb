@@ -58,35 +58,35 @@ int ms_dev_out(ms_dev_t* dev,
   int out_endpoint = ms_dev_out_endpoint(dev);
   int in_endpoint = ms_dev_in_endpoint(dev);
   if (out_endpoint < 0 || in_endpoint < 0) {
-    return -LIBUSB_ERROR_PIPE;
+    return LIBUSB_ERROR_PIPE;
   }
   int actual_length = 0;
   int res =
       libusb_bulk_transfer(dev->handle, out_endpoint, (unsigned char*)&cbw,
                            sizeof(cbw), &actual_length, 0);
   if (res) {
-    return -res;
+    return res;
   }
 
   res = libusb_bulk_transfer(dev->handle, out_endpoint, (unsigned char*)data,
                              (int)data_len, &actual_length, 0);
   if (res) {
-    return -res;
+    return res;
   }
 
   csw_packet_t csw;
   res = libusb_bulk_transfer(dev->handle, in_endpoint, (unsigned char*)&csw,
                              sizeof(csw), &actual_length, 0);
   if (res) {
-    return -res;
+    return res;
   }
   csw_packet_convert_endian(&csw);
 
   if (csw.tag != 1337) {
-    return -LIBUSB_ERROR_OTHER;
+    return LIBUSB_ERROR_OTHER;
   }
   if (csw.status) {
-    return -LIBUSB_ERROR_IO;
+    return LIBUSB_ERROR_IO;
   }
   return data_len - csw.residue;
 }
@@ -110,35 +110,37 @@ int ms_dev_in(ms_dev_t* dev,
   int out_endpoint = ms_dev_out_endpoint(dev);
   int in_endpoint = ms_dev_in_endpoint(dev);
   if (out_endpoint < 0 || in_endpoint < 0) {
-    return -LIBUSB_ERROR_PIPE;
+    return LIBUSB_ERROR_PIPE;
   }
   int actual_length = 0;
   int res =
       libusb_bulk_transfer(dev->handle, out_endpoint, (unsigned char*)&cbw,
                            sizeof(cbw), &actual_length, 0);
   if (res) {
-    return -res;
+    return res;
   }
 
-  res = libusb_bulk_transfer(dev->handle, in_endpoint, (unsigned char*)data,
-                             (int)data_len, &actual_length, 0);
-  if (res) {
-    return -res;
+  if (data_len) {
+    res = libusb_bulk_transfer(dev->handle, in_endpoint, (unsigned char*)data,
+                               (int)data_len, &actual_length, 0);
+    if (res) {
+      return res;
+    }
   }
 
   csw_packet_t csw;
   res = libusb_bulk_transfer(dev->handle, in_endpoint, (unsigned char*)&csw,
                              sizeof(csw), &actual_length, 0);
   if (res) {
-    return -res;
+    return res;
   }
   csw_packet_convert_endian(&csw);
 
   if (csw.tag != 1338) {
-    return -LIBUSB_ERROR_OTHER;
+    return LIBUSB_ERROR_IO;
   }
   if (csw.status) {
-    return -LIBUSB_ERROR_IO;
+    return LIBUSB_ERROR_IO;
   }
   return data_len - csw.residue;
 }

@@ -8,7 +8,7 @@ build/descriptors: descriptors/main.c
 build/keyboard: keyboard/main.c common/find_interfaces.c
 	$(CC) -o $@ $^ $(CFLAGS)
 
-build/mass_storage: mass_storage/main.c mass_storage/commands.c common/find_interfaces.c
+build/mass_storage: mass_storage/main.c mass_storage/commands.c mass_storage/scsi.c common/find_interfaces.c
 	$(CC) -o $@ $^ $(CFLAGS)
 
 build:
