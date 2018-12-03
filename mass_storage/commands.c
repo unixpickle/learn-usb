@@ -1,4 +1,6 @@
 #include "commands.h"
+#include <assert.h>
+#include <string.h>
 
 #define le32(x)                                                           \
   (libusb_cpu_to_le16(1) == 1 ? x                                         \
@@ -19,7 +21,7 @@ void csw_packet_convert_endian(csw_packet_t* packet) {
 
 int ms_dev_in_endpoint(ms_dev_t* dev) {
   for (int i = 0; i < (int)dev->iface->bNumEndpoints; ++i) {
-    struct libusb_endpoint_descriptor* desc = &dev->iface->endpoint[i];
+    const struct libusb_endpoint_descriptor* desc = &dev->iface->endpoint[i];
     if (desc->bEndpointAddress & 0x80) {
       return desc->bEndpointAddress;
     }
@@ -29,7 +31,7 @@ int ms_dev_in_endpoint(ms_dev_t* dev) {
 
 int ms_dev_out_endpoint(ms_dev_t* dev) {
   for (int i = 0; i < (int)dev->iface->bNumEndpoints; ++i) {
-    struct libusb_endpoint_descriptor* desc = &dev->iface->endpoint[i];
+    const struct libusb_endpoint_descriptor* desc = &dev->iface->endpoint[i];
     if (!(desc->bEndpointAddress & 0x80)) {
       return desc->bEndpointAddress;
     }
@@ -59,21 +61,22 @@ int ms_dev_out(ms_dev_t* dev,
     return -LIBUSB_ERROR_PIPE;
   }
   int actual_length = 0;
-  int res = libusb_bulk_transfer(dev->handle, out_endpoint, &cbw, sizeof(cbw),
-                                 &actual_length, 0);
+  int res =
+      libusb_bulk_transfer(dev->handle, out_endpoint, (unsigned char*)&cbw,
+                           sizeof(cbw), &actual_length, 0);
   if (res) {
     return -res;
   }
 
-  int res = libusb_bulk_transfer(dev->handle, out_endpoint, data, (int)data_len,
-                                 &actual_length, 0);
+  res = libusb_bulk_transfer(dev->handle, out_endpoint, (unsigned char*)data,
+                             (int)data_len, &actual_length, 0);
   if (res) {
     return -res;
   }
 
   csw_packet_t csw;
-  int res = libusb_bulk_transfer(dev->handle, in_endpoint, &csw, sizeof(csw),
-                                 &actual_length, 0);
+  res = libusb_bulk_transfer(dev->handle, in_endpoint, (unsigned char*)&csw,
+                             sizeof(csw), &actual_length, 0);
   if (res) {
     return -res;
   }
@@ -110,21 +113,22 @@ int ms_dev_in(ms_dev_t* dev,
     return -LIBUSB_ERROR_PIPE;
   }
   int actual_length = 0;
-  int res = libusb_bulk_transfer(dev->handle, out_endpoint, &cbw, sizeof(cbw),
-                                 &actual_length, 0);
+  int res =
+      libusb_bulk_transfer(dev->handle, out_endpoint, (unsigned char*)&cbw,
+                           sizeof(cbw), &actual_length, 0);
   if (res) {
     return -res;
   }
 
-  int res = libusb_bulk_transfer(dev->handle, in_endpoint, data, (int)data_len,
-                                 &actual_length, 0);
+  res = libusb_bulk_transfer(dev->handle, in_endpoint, (unsigned char*)data,
+                             (int)data_len, &actual_length, 0);
   if (res) {
     return -res;
   }
 
   csw_packet_t csw;
-  int res = libusb_bulk_transfer(dev->handle, in_endpoint, &csw, sizeof(csw),
-                                 &actual_length, 0);
+  res = libusb_bulk_transfer(dev->handle, in_endpoint, (unsigned char*)&csw,
+                             sizeof(csw), &actual_length, 0);
   if (res) {
     return -res;
   }

@@ -26,7 +26,7 @@ void csw_packet_convert_endian(csw_packet_t* packet);
 
 typedef struct {
   libusb_device_handle* handle;
-  struct libusb_interface_descriptor* iface;
+  const struct libusb_interface_descriptor* iface;
   uint32_t lun;
 } ms_dev_t;
 
