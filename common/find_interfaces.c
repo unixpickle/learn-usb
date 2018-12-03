@@ -52,7 +52,21 @@ static void handle_device(
     return;
   }
   if (should_use(handle)) {
-    cb(handle, iface);
+    libusb_detach_kernel_driver(handle, iface->bInterfaceNumber);
+    int res = libusb_reset_device(handle);
+    if (!res) {
+      res = libusb_claim_interface(handle, iface->bInterfaceNumber);
+      if (!res) {
+        cb(handle, iface);
+        libusb_release_interface(handle, iface->bInterfaceNumber);
+      } else {
+        fprintf(stderr, "[ERROR] claiming interface: %s\n",
+                libusb_error_name(res));
+      }
+    } else {
+      fprintf(stderr, "[ERROR] resetting device: %s\n", libusb_error_name(res));
+    }
+    libusb_attach_kernel_driver(handle, iface->bInterfaceNumber);
   }
   libusb_close(handle);
 }

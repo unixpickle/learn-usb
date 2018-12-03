@@ -21,18 +21,9 @@ void handle_keyboard(libusb_device_handle* handle,
     fprintf(stderr, "[ERROR] unexpected number of endpoints.\n");
     return;
   }
-
-  libusb_detach_kernel_driver(handle, iface->bInterfaceNumber);
-  int res = libusb_claim_interface(handle, iface->bInterfaceNumber);
-  if (!res) {
-    if (setup_keyboard(handle)) {
-      keyboard_loop(handle, iface);
-    }
-    libusb_release_interface(handle, iface->bInterfaceNumber);
-  } else {
-    fprintf(stderr, "[ERROR] claiming interface: %s\n", libusb_error_name(res));
+  if (setup_keyboard(handle)) {
+    keyboard_loop(handle, iface);
   }
-  libusb_attach_kernel_driver(handle, iface->bInterfaceNumber);
 }
 
 int setup_keyboard(libusb_device_handle* handle) {
