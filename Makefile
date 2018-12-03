@@ -1,14 +1,14 @@
-CFLAGS=$(shell pkg-config --cflags --libs libusb-1.0)
+CFLAGS=$(shell pkg-config --cflags --libs libusb-1.0) -Icommon
 
 all: build build/descriptors build/keyboard build/mass_storage
 
 build/descriptors: descriptors/main.c
 	$(CC) -o $@ $^ $(CFLAGS)
 
-build/keyboard: keyboard/main.c
+build/keyboard: keyboard/main.c common/find_interfaces.c
 	$(CC) -o $@ $^ $(CFLAGS)
 
-build/mass_storage: mass_storage/main.c mass_storage/commands.c
+build/mass_storage: mass_storage/main.c mass_storage/commands.c common/find_interfaces.c
 	$(CC) -o $@ $^ $(CFLAGS)
 
 build:
