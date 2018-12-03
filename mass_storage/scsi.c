@@ -65,6 +65,21 @@ int scsi_read_capacity_16(ms_dev_t* dev,
   return 0;
 }
 
+int scsi_read_10(ms_dev_t* dev,
+                 uint32_t logical_block,
+                 uint16_t num_blocks,
+                 uint32_t output_size,
+                 char* output) {
+  char request[10];
+  bzero(request, sizeof(request));
+  request[0] = 0x28;
+  *((uint32_t*)&request[2]) = fix_endian_32(logical_block);
+  request[7] = (uint8_t)(num_blocks >> 8);
+  request[8] = (uint8_t)num_blocks;
+
+  return ms_dev_in(dev, (uint32_t)output_size, 10, request, output);
+}
+
 static uint32_t fix_endian_32(uint32_t number) {
   uint32_t x = 1;
   if (!*(char*)&x) {

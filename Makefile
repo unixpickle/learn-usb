@@ -1,4 +1,4 @@
-CFLAGS=$(shell pkg-config --cflags --libs libusb-1.0) -Icommon
+CFLAGS=$(shell pkg-config --cflags --libs libusb-1.0) -Icommon -lm
 
 all: build build/descriptors build/keyboard build/mass_storage
 
